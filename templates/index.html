@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATM for Blind People</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the ATM</h1>
+    <p id="activation-status">Waiting for activation keyword...</p>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let activationFlag = false; // Flag to track activation status
+
+            // Function to handle speech synthesis
+            function textToSpeech(text) {
+                const msg = new SpeechSynthesisUtterance();
+                msg.text = text;
+                window.speechSynthesis.speak(msg);
+            }
+
+            // Function to handle speech recognition
+            function handleSpeechRecognition() {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.start();
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript.toLowerCase();
+                    console.log('You said:', transcript);
+
+                    if (transcript.includes('atm')) {
+                        activationFlag = true;
+                        textToSpeech("Activation keyword detected. Please say your first name.");
+                        document.getElementById('activation-status').innerText = "ACTIVE ATM";
+                        handleFirstNameRecognition();
+                    } else {
+                        textToSpeech("Please say the activation word.");
+                    }
+                };
+
+                recognition.onspeechend = function() {
+                    if (!activationFlag) {
+                        recognition.start();
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error detected: ' + event.error);
+                    recognition.start();
+                };
+            }
+
+            // Function to handle first name recognition
+            function handleFirstNameRecognition() {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                recognition.start();
+
+                recognition.onresult = function(event) {
+                    const firstName = event.results[0][0].transcript.toLowerCase();
+                    console.log('You said your first name:', firstName);
+
+                    fetch('/activate-atm/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ firstName: firstName })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        textToSpeech(data.message);
+                        document.getElementById('activation-status').innerText = data.message;
+                        // Reset activation flag and status after service completion
+                        activationFlag = false;
+                        document.getElementById('activation-status').innerText = "Waiting for activation keyword...";
+                    })
+                    .catch(error => {
+                        console.error('Error activating ATM:', error);
+                    });
+                };
+
+                recognition.onspeechend = function() {
+                    recognition.stop();
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error detected: ' + event.error);
+                };
+            }
+
+            // Start listening for the activation keyword continuously
+            textToSpeech("Please say the activation keyword to start the ATM.");
+            handleSpeechRecognition();
+        });
+    </script>
+</body>
+</html>
+
