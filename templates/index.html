@@ -111,10 +111,13 @@
                         document.getElementById('activation-status').innerText = data.message;
                         // Reset activation flag and status after service completion
                         activationFlag = false;
+                        textToSpeech("Please say the activation keyword to start the ATM.");
                         document.getElementById('activation-status').innerText = "Waiting for activation keyword...";
+                        handleSpeechRecognition(); // Restart the recognition for the next user
                     })
                     .catch(error => {
                         console.error('Error activating ATM:', error);
+                        textToSpeech("An error occurred. Please try again.");
                     });
                 };
 

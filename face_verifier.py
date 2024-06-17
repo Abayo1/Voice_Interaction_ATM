@@ -55,10 +55,5 @@ class FaceVerifier:
         else:
             print("Faces are not verified as similar.")
 
-# Usage
-if __name__ == "__main__":
-    face_verifier = FaceVerifier()
-    image1_path = "/home/abayo/Downloads/PXL_20240613_175406049.jpg"
-    image2_path = "/home/abayo/Desktop/ATM_Voice_Interaction/face_db/timothy/timothy.JPG"
-    face_verifier.verify_and_print_result(image1_path, image2_path)
+
 

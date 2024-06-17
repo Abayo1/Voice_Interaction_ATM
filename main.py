@@ -97,6 +97,9 @@ async def present_services(first_name):
     else:
         speech_processor.text_to_speech("Invalid choice. Please say the number of the service you want to choose.")
         await present_services(first_name)
+    
+    #restart the ATM service
+    await activate_atm()
 
 async def handle_withdrawal():
     speech_processor.text_to_speech("You chose to withdraw money. Please say the amount you want to withdraw less than or equal to 1000000")
@@ -196,4 +199,6 @@ if __name__ == "__main__":
 
     activation_thread = threading.Thread(target=listen_for_activation)
     activation_thread.start()
+    
+
 
